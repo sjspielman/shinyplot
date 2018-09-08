@@ -30,6 +30,3 @@ To run locally, you'll need the following packages:
 	+ For scatterplots, you can choose to turn off the linear regression line
 3. Thanks to the lovely package `colourpicker`, you get to choose a custom color under **Select color**! This is the best feature, by a long shot.
 4. When you're ready to go, click "Go!" For any changes you make, click "Go!" to update the plot.
-
-
-Imporrantlty

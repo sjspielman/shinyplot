@@ -1,11 +1,20 @@
 library(shiny)
 library(colourpicker)
 library(tidyverse)
+library(patchwork)
 
 server <- function(input, output) {
 
-    
-    #This function is repsonsible for loading in the selected file
+
+    ### Set ggplot theme ###
+    theme_set(theme_classic() + theme(axis.text = element_text(size=15), 
+                                      axis.title = element_text(size=18), 
+                                      legend.text = element_text(size = 15),
+                                      legend.title = element_text(size=17),
+                                      legend.key.size = unit(1, "cm"),
+                                      plot.margin = margin(t = 1, r = 1, b = 0.5, l = 0.5, unit = "cm")))    
+                                      
+    ### Reactive function to read in user data ###
     userdata <- reactive({
       infile <- input$datafile
       if (is.null(infile)) {
@@ -14,11 +23,16 @@ server <- function(input, output) {
       }
       read_csv(infile$datapath)
     })
+
+    ### Reactive variables for conditionalPanel interaction in ui.R
+    output$userdata_exists <- reactive(!is.null(userdata()))
+    outputOptions(output, "userdata_exists", suspendWhenHidden = FALSE)
     
-   output$userdata_exists <- reactive(!is.null(userdata()))
-   outputOptions(output, "userdata_exists", suspendWhenHidden = FALSE)
+    output$variables_selected <- reactive(!is.null(output$selectvars()))
+    outputOptions(output, "variables_selected", suspendWhenHidden = FALSE)
 
 
+    ### UI: Which type of quantitative plot?
     output$selectplot <- renderUI({
         
         if (is.null(userdata())) return(NULL)
@@ -26,29 +40,17 @@ server <- function(input, output) {
         switch(input$dataviz, 
                 "quant" = selectInput("whichquant", 
                         "Which type of plot would you like to make?", 
-                        choices = c("Histogram", "Boxplot", "Jitter plot")),
+                        choices = c("Histogram", "Density plot", "Boxplot", "Jitter plot", "Make all")),
                 "multquant" = selectInput("whichquant", 
                         "Which type of plot would you like to make?", 
-                        choices = c("Boxplot", "Jitter plot"))
+                        choices = c("Boxplot", "Density plot", "Jitter plot", "Make all"))
                 )
-        ####### to do: we should be able to do this with barplots and error bars ########
-        
-#         if (input$dataviz == "quant")
-#         {
-#             selectInput("whichquant", 
-#                         "Which type of plot would you like to make?", 
-#                         choices = c("Histogram", "Boxplot", "Jitter plot"))
-#         }      
-#         
-#         if (input$dataviz == "multquant")
-#         {  
-#              selectInput("whichquant", 
-#                         "Which type of plot would you like to make?", 
-#                         choices = c("Boxplot", "Jitter plot"))
-#         }      
+        ####### to do: we should be able to do this with barplots and error bars ########    
     })
 
+    
 
+    ### UI: Which variables to plot?
     output$selectvars <- renderUI({
     
         
@@ -76,27 +78,22 @@ server <- function(input, output) {
  
  
  
-# Generate a summary of the data
-output$summary <- renderPrint({
-    req(userdata())
-    if (is.null(userdata())) return(NULL)
-     summary(userdata())
-})
+    ### UI: Summary table of *full* upload
+    output$summary <- renderPrint({
+        req(userdata())
+        if (is.null(userdata())) return(NULL)
+         summary(userdata())
+    })
 
 
-observeEvent(input$go,  {
+    ### "Regular" function which returns the plot
+    zeplot <- function() {
 
-    finaldata <- isolate(userdata())
-    output$mahplot <- renderPlot( {
-
-
-        theme_set(theme_classic() + theme(axis.text = element_text(size=15), axis.title = element_text(size=18)))
- 
- 
+        finaldata <- isolate(userdata()) 
         viz <- isolate(input$dataviz)
         geom_quant <- isolate(input$whichquant)
         thecolor <- isolate(input$yaycolor)
-    
+
 
         ################ Single distribution ##################
         if (viz == "quant" & geom_quant == "Histogram")
@@ -104,15 +101,29 @@ observeEvent(input$go,  {
             quantvar2 <- isolate(input$quantvar)
             p <- ggplot(finaldata, aes_string(x = quantvar2)) + geom_histogram(color = "black", fill = thecolor)
         }
+        if (viz == "quant" & geom_quant == "Density plot")
+        {
+            quantvar2 <- isolate(input$quantvar)
+            p <- ggplot(finaldata, aes_string(x = quantvar2)) + geom_density(color = "black", fill = thecolor, alpha=0.8)
+        }
         if (viz == "quant" & geom_quant == "Boxplot")
         {
             quantvar2 <- isolate(input$quantvar)
-            p <- ggplot(finaldata, aes_string(y = quantvar2)) + geom_boxplot(fill = thecolor)
+            p <- ggplot(finaldata, aes_string(y = quantvar2)) + geom_boxplot(fill = thecolor) + theme(axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank())
         }
         if (viz == "quant" & geom_quant == "Jitter plot")
         {
             quantvar2 <- isolate(input$quantvar)
-            p <- ggplot(finaldata, aes_string(y = quantvar2)) + geom_jitter(aes(x=""), color = thecolor, width=0.05)
+            p <- ggplot(finaldata, aes_string(y = quantvar2)) + geom_jitter(aes(x=""), color = thecolor, width=0.075) + xlab("")
+        }
+        if (viz == "quant" & geom_quant == "Make all")
+        {
+            quantvar2 <- isolate(input$quantvar)
+            p1 <- ggplot(finaldata, aes_string(x = quantvar2)) + geom_histogram(color = "black", fill = thecolor)
+            p2 <- ggplot(finaldata, aes_string(x = quantvar2)) + geom_density(color = "black", fill = thecolor, alpha=0.8)
+            p3 <- ggplot(finaldata, aes_string(y = quantvar2)) + geom_boxplot(fill = thecolor)
+            p4 <- ggplot(finaldata, aes_string(y = quantvar2)) + geom_jitter(aes(x=""), color = thecolor, width=0.075) + xlab("")
+            p <- (p1 + p2) / (p3 + p4)
         }
         ########################################################
 
@@ -121,14 +132,30 @@ observeEvent(input$go,  {
         {
             quantvar2 <- isolate(input$quantvar)
             quantvar_cat2 <- isolate(input$quantvar_cat)
-            
-            p <- ggplot(finaldata, aes_string(x = quantvar_cat2, y = quantvar2, fill = quantvar_cat2, group = quantvar_cat2)) + geom_boxplot()
+
+            #finaldata[,quantvar_cat2] <- factor(finaldata[,quantvar_cat2]) # doesn't work, why?!
+            p <- ggplot(finaldata, aes_string(x = quantvar_cat2, y = quantvar2, group = quantvar_cat2, fill = paste0("factor(",quantvar_cat2,")"))) + geom_boxplot() + scale_fill_hue(name = quantvar_cat2, l=45)
+        }
+        if (viz == "multquant" & geom_quant == "Density plot")
+        {
+            quantvar2 <- isolate(input$quantvar)
+            quantvar_cat2 <- isolate(input$quantvar_cat)
+            p <- ggplot(finaldata, aes_string(x = quantvar2, fill = paste0("factor(",quantvar_cat2,")"))) + geom_density(color = "black", alpha=0.5) + scale_fill_hue(name = quantvar_cat2, l=45)
         }
         if (viz == "multquant" & geom_quant == "Jitter plot") ## todo: color by group such that it forces factor in aes_string?
         {
             quantvar2 <- isolate(input$quantvar)
             quantvar_cat2 <- isolate(input$quantvar_cat)
-            p <- ggplot(finaldata, aes_string(x = quantvar_cat2, y = quantvar2, group = quantvar_cat2)) + geom_jitter(color = thecolor)
+            p <- ggplot(finaldata, aes_string(x = quantvar_cat2, y = quantvar2, group = quantvar_cat2, color = paste0("factor(",quantvar_cat2,")") )) + geom_jitter(width = 0.1) + theme(legend.position = "none") + scale_fill_hue(name = quantvar_cat2, l=45)
+        }
+        if (viz == "multquant" & geom_quant == "Make all") 
+        {
+            quantvar2 <- isolate(input$quantvar)
+            quantvar_cat2 <- isolate(input$quantvar_cat)
+            p1 <- ggplot(finaldata, aes_string(x = quantvar_cat2, y = quantvar2, fill = paste0("factor(",quantvar_cat2,")"), group = quantvar_cat2)) + geom_boxplot() + theme(legend.position = "none") + scale_fill_hue(l=45)
+            p2 <- ggplot(finaldata, aes_string(x = quantvar2, fill = paste0("factor(",quantvar_cat2,")") )) + geom_density(color = "black", alpha=0.6) + theme(legend.position = "bottom") + scale_fill_hue(l=45, name = quantvar_cat2)
+            p3 <- ggplot(finaldata, aes_string(x = quantvar_cat2, y = quantvar2, group = quantvar_cat2, color = paste0("factor(",quantvar_cat2,")") )) + geom_jitter(width = 0.1) + theme(legend.position = "none") + scale_color_hue(l=45)
+            p <- p1 + p2 + p3
         }
         ########################################################
 
@@ -137,7 +164,7 @@ observeEvent(input$go,  {
         if (viz == "counts")
         {
             countvar <- isolate(input$countvar)
-            
+    
             p <- ggplot(finaldata, aes_string(x = countvar)) + geom_bar(fill = thecolor)
         }
         ########################################################
@@ -150,7 +177,7 @@ observeEvent(input$go,  {
             regression <- isolate(input$bestfit)
             if (regression == TRUE) 
             {
-                p <- ggplot(finaldata, aes_string(x = x, y = y)) + geom_point() + geom_smooth(method = "lm")
+                p <- ggplot(finaldata, aes_string(x = x, y = y)) + geom_point() + geom_smooth(color = thecolor, method = "lm")
             }
             else 
             {
@@ -159,11 +186,31 @@ observeEvent(input$go,  {
             }
         }
         ########################################################
-
-            
-  
         print(p)
-      })
+    }
 
-})  
+
+    ### Render plot and download button, reactive to "Go" button
+    observeEvent(input$go,  {
+
+    
+        output$mahplot <- renderPlot( { 
+            zeplot()
+        })
+
+        output$download <- renderUI({
+            downloadButton('download_plot', 'Download plot')
+        })
+
+
+       output$download_plot <- downloadHandler(
+            filename = function() {
+                "download.png"
+            },
+            content = function(file) {
+                ggsave(file, zeplot(), width = 6, height = 4)
+            }
+        )
+    })  
 }
+

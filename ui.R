@@ -7,7 +7,7 @@ library(colourpicker)
 ui <- fluidPage(
 
   # App title
-  titlePanel("Visualize simple datasets with ggplot2"),
+  titlePanel("Visualize simple data distributions with ggplot2"),
     
 
   # Sidebar layout with input and output definitions

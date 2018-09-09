@@ -8,6 +8,7 @@ ui <- fluidPage(
 
   # App title
   titlePanel("Visualize simple datasets with ggplot2"),
+    
 
   # Sidebar layout with input and output definitions
   sidebarLayout(
@@ -15,6 +16,10 @@ ui <- fluidPage(
     # Sidebar panel for inputs
     sidebarPanel(
 
+    helpText("", (a("Source code and instructions",
+        href="https://github.com/sjspielman/shinyplot"))),
+        
+         
     # Input dataset in CSV                           
     fileInput("datafile", "Choose CSV File for plotting",
         accept = c(

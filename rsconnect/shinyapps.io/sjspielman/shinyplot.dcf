@@ -5,6 +5,6 @@ account: sjspielman
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 429903
-bundleId: 1576092
+bundleId: 1577210
 url: https://sjspielman.shinyapps.io/shinyplot/
-when: 1536427320.57649
+when: 1536520489.14766

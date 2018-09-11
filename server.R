@@ -21,16 +21,13 @@ server <- function(input, output) {
         # User has not uploaded a file yet
         return(NULL)
       }
-      read_csv(infile$datapath)
+      read.csv(infile$datapath) ## we actually want to force factors, all we do is summary!
     })
 
     ### Reactive variables for conditionalPanel interaction in ui.R
     output$userdata_exists <- reactive(!is.null(userdata()))
     outputOptions(output, "userdata_exists", suspendWhenHidden = FALSE)
     
-    output$variables_selected <- reactive(!is.null(output$selectvars()))
-    outputOptions(output, "variables_selected", suspendWhenHidden = FALSE)
-
 
     ### UI: Which type of quantitative plot?
     output$selectplot <- renderUI({
@@ -170,7 +167,7 @@ server <- function(input, output) {
         finaldata <- isolate_data()
         quantvar2 <-  as.symbol(isolate(input$quantvar))
         quantvar_cat2 <-  as.symbol(isolate(input$quantvar_cat))
-        p <- ggplot(finaldata) + stat_summary_bin(aes(x = factor(!!quantvar_cat2), y = !!quantvar2, fill = factor(!!quantvar_cat2)), fun.y = "mean", geom = "bar", width=0.1) + stat_summary_bin(aes(factor(!!quantvar_cat2), y = !!quantvar2), fun.data = "mean_se", geom = "linerange", size=1.5) + xlab(quantvar_cat2) +  scale_fill_hue(name = quantvar_cat2, l=45)
+        p <- ggplot(finaldata) + stat_summary_bin(aes(x = factor(!!quantvar_cat2), y = !!quantvar2, fill = factor(!!quantvar_cat2)), fun.y = "mean", geom = "bar") + stat_summary_bin(aes(factor(!!quantvar_cat2), y = !!quantvar2), fun.data = "mean_se", geom = "linerange", size=4) + xlab(quantvar_cat2) +  scale_fill_hue(name = quantvar_cat2, l=45)
         p
     }
     plot_line <- function()

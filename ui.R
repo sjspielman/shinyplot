@@ -8,16 +8,14 @@ ui <- fluidPage(
 
   # App title
   titlePanel("Visualize simple data distributions with ggplot2"),
-    
-
+    helpText("Written by Stephanie J. Spielman.", (a("Source code and instructions",
+        href="https://github.com/sjspielman/shinyplot"))),
+        
   # Sidebar layout with input and output definitions
   sidebarLayout(
 
     # Sidebar panel for inputs
     sidebarPanel(
-
-    helpText("", (a("Source code and instructions",
-        href="https://github.com/sjspielman/shinyplot"))),
         
          
     # Input dataset in CSV                           

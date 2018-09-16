@@ -68,20 +68,20 @@ server <- function(input, output) {
                                     value = TRUE,
                                     width = NULL
                                 )),         
-                "quant"   = selectInput("quantvar", "Select the *quantitative* variable whose distribution to visualize:",dfnames),
+                "quant"   = selectInput("quantvar", "Select the quantitative variable to visualize:",dfnames),
                 "multquant" = list(
-                                    selectInput("quantvar", "Select the *quantitative* variable whose distribution to visualize:",dfnames),
-                                    selectInput("quantvar_cat", "Select the *categorical* variable to visualize across:",dfnames)
+                                    selectInput("quantvar", "Select the quantitative variable to visualize:",dfnames),
+                                    selectInput("quantvar_cat", "Select the categorical variable to visualize the quantitative variable across:",dfnames)
                                 ),
                 "multquant2" = list(
-                                    selectInput("quantvar", "Select the *quantitative* variable whose distribution to visualize:",dfnames),
-                                    selectInput("quantvar_cat", "Select the *first categorical* variable to visualize across:",dfnames),
-                                    selectInput("quantvar_cat2", "Select the *second categorical* variable to visualize across:",dfnames)
+                                    selectInput("quantvar", "Select the quantitative variable to visualize:",dfnames),
+                                    selectInput("quantvar_cat", "Select the first categorical variable to visualize across:",dfnames),
+                                    selectInput("quantvar_cat2", "Select the second categorical variable to visualize across:",dfnames)
                                 ),
-                "counts"   = selectInput("countvar", "Select the *categorical* variable to visualize its count:",dfnames),
+                "counts"   = selectInput("countvar", "Select the categorical variable to visualize its count:",dfnames),
                 "counts2"  = list(
-                                    selectInput("countvar", "Select the *independent* categorical variable:",dfnames),
-                                    selectInput("countvar2", "Selection the *dependent* categorical variable:",dfnames)
+                                    selectInput("countvar", "Select the independent (aka explanatory) categorical variable:",dfnames),
+                                    selectInput("countvar2", "Selection the dependent (aka response) categorical variable:",dfnames)
                                  )                              
             )
     })
@@ -147,7 +147,7 @@ server <- function(input, output) {
         finaldata <- isolate_data()
         thecolor  <- isolate_color()
         quantvar2 <- as.symbol( isolate(input$quantvar) )
-        p <- ggplot(finaldata, aes(x="")) + stat_summary(aes(y = !!quantvar2), fun.y = "mean", geom = "bar", width=0.1, fill = thecolor) + stat_summary(aes(y = !!quantvar2), fun.dat = "mean_se", geom = "errorbar", width = 0.05) + xlab("")
+        p <- ggplot(finaldata, aes(x="")) + stat_summary(aes(y = !!quantvar2), fun.y = "mean", geom = "bar", width=0.1, fill = thecolor) + stat_summary(aes(y = !!quantvar2), fun.data = "mean_se", geom = "errorbar", width = 0.05) + xlab("") + scale_y_continuous(expand = c(0,0))
         p    
     }
 
@@ -199,7 +199,7 @@ server <- function(input, output) {
         finaldata <- isolate_data()
         quantvar2 <-  as.symbol(isolate(input$quantvar))
         quantvar_cat2 <-  as.symbol(isolate(input$quantvar_cat))
-        p <- ggplot(finaldata) + stat_summary_bin(aes(x = factor(!!quantvar_cat2), y = !!quantvar2, fill = factor(!!quantvar_cat2)), fun.y = "mean", geom = "bar") + stat_summary_bin(aes(factor(!!quantvar_cat2), y = !!quantvar2), fun.data = "mean_se", geom = "linerange", size=3) + xlab(quantvar_cat2) +  scale_fill_hue(name = quantvar_cat2, l=45)
+        p <- ggplot(finaldata) + stat_summary_bin(aes(x = factor(!!quantvar_cat2), y = !!quantvar2, fill = factor(!!quantvar_cat2)), fun.y = "mean", geom = "bar") + stat_summary_bin(aes(factor(!!quantvar_cat2), y = !!quantvar2), fun.data = "mean_se", geom = "linerange", size=3) + xlab(quantvar_cat2) +  scale_fill_hue(name = quantvar_cat2, l=45) + scale_y_continuous(expand = c(0,0))
         p
     }
     plot_multbarquant2 <- function()
@@ -210,7 +210,7 @@ server <- function(input, output) {
         quantvar_cat22 <-  as.symbol(isolate(input$quantvar_cat2))
         position_bar <- position_dodge(preserve = "total") ## will have a single category one fill up whole x
         position_error <- position_dodge(0.9)
-        p <- ggplot(finaldata) + stat_summary_bin(aes(x = factor(!!quantvar_cat2), y = !!quantvar2, fill = factor(!!quantvar_cat22)), fun.y = "mean", geom = "bar", position = position_bar) + stat_summary_bin(aes(x = factor(!!quantvar_cat2), y = !!quantvar2, group = factor(!!quantvar_cat22)), fun.data = "mean_se", geom = "linerange", size=4, position = position_error) + xlab(quantvar_cat2) +  scale_fill_hue(name = quantvar_cat22, l=45)
+        p <- ggplot(finaldata) + stat_summary_bin(aes(x = factor(!!quantvar_cat2), y = !!quantvar2, fill = factor(!!quantvar_cat22)), fun.y = "mean", geom = "bar", position = position_bar) + stat_summary_bin(aes(x = factor(!!quantvar_cat2), y = !!quantvar2, group = factor(!!quantvar_cat22)), fun.data = "mean_se", geom = "linerange", size=4, position = position_error) + xlab(quantvar_cat2) +  scale_fill_hue(name = quantvar_cat22, l=45) + scale_y_continuous(expand = c(0,0))
         p
     }
     plot_line <- function()
@@ -230,7 +230,7 @@ server <- function(input, output) {
         finaldata <- isolate_data()
         thecolor  <- isolate_color()
         countvar <-  as.symbol(isolate(input$countvar))
-        p <- ggplot(finaldata, aes(x = factor(!!countvar))) + geom_bar(fill = thecolor) + xlab(countvar)
+        p <- ggplot(finaldata, aes(x = factor(!!countvar))) + geom_bar(fill = thecolor) + xlab(countvar) + scale_y_continuous(expand = c(0,0))
         p
     }
     plot_barcount2 <- function()
@@ -239,7 +239,7 @@ server <- function(input, output) {
         thecolor  <- isolate_color()
         countvar <-  as.symbol(isolate(input$countvar))
         countvar2 <-  as.symbol(isolate(input$countvar2))
-        p <- ggplot(finaldata, aes(x = factor(!!countvar), fill = factor(!!countvar2))) + geom_bar(position = "dodge2") + xlab(countvar) + scale_fill_hue(name = countvar2, l=45) 
+        p <- ggplot(finaldata, aes(x = factor(!!countvar), fill = factor(!!countvar2))) + geom_bar(position = "dodge2") + xlab(countvar) + scale_fill_hue(name = countvar2, l=45) + scale_y_continuous(expand = c(0,0))
         p
     }    
     

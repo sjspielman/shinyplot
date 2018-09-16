@@ -35,26 +35,26 @@ ui <- fluidPage(
     conditionalPanel("output.userdata_exists",
     radioButtons("dataviz", "Type of data to visualization to create:",
                 choices=c("Distribution of a quantitative variable" = "quant",
-                          "Distribution of a quantitative variable, across categories of a *single* categorical variable" = "multquant",
-                          "Distribution of a quantitative variable, across categories of a *two* categorical variables" = "multquant2",
-                          "Barplot: Distribution of a single categorical variable (i.e., counts)" = "counts",
-                          "Barplot: Distribution of a single categorical variable, across categories of a second categorical variable" = "counts2",
-                          "Scatterplot: Relationship between two quantitative variables" = "scatter"))  
+                          "Distribution of a quantitative variable, across ONE categorical variable" = "multquant",
+                          "Distribution of a quantitative variable, across TWO categorical variables" = "multquant2",
+                          "Distribution of a categorical variable (barplot)" = "counts",
+                          "Distribution of a categorical variable, across another categorical variable (barplot)" = "counts2",
+                          "Relationship between two quantitative variables (scatterplot)" = "scatter"))  
     ),
     # Horizontal line
     
     conditionalPanel("output.userdata_exists",
         {tags$hr()}),
                
-    # Select geom for a quantitative plot (quant or multquant)     
-    uiOutput("selectplot"),
-    
     # Select variables for any plot
     uiOutput("selectvars"),
     
+    # Select geom for a quantitative plot (quant or multquant)     
+    uiOutput("selectplot"),
+    
     ## hurray color!!
     conditionalPanel("output.userdata_exists",
-        {colourInput("yaycolor", "Select color", value = "seagreen")}
+        {colourInput("yaycolor", "Select color:", value = "seagreen")}
     ),
 
     # Horizontal line

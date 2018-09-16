@@ -40,7 +40,11 @@ server <- function(input, output) {
                         choices = c("Histogram", "Density plot", "Boxplot", "Jitter plot", "Bar plot", "Make all")),
                 "multquant" = selectInput("whichquant", 
                         "Which type of plot would you like to make?", 
-                        choices = c("Boxplot", "Density plot", "Jitter plot", "Bar plot", "Line plot", "Make all"))
+                        choices = c("Boxplot", "Density plot", "Jitter plot", "Bar plot", "Line plot", "Make all")),
+                "multquant2" = selectInput("whichquant", 
+                        "Which type of plot would you like to make?", 
+                        choices = c("Boxplot", "Jitter plot", "Bar plot", "Make all"))
+                
                 )
         ####### to do: we should be able to do this with barplots and error bars ########    
     })
@@ -69,7 +73,16 @@ server <- function(input, output) {
                                     selectInput("quantvar", "Select the *quantitative* variable whose distribution to visualize:",dfnames),
                                     selectInput("quantvar_cat", "Select the *categorical* variable to visualize across:",dfnames)
                                 ),
-                "counts"   = selectInput("countvar", "Select the *categorical* variable to visualize its count:",dfnames)                                        
+                "multquant2" = list(
+                                    selectInput("quantvar", "Select the *quantitative* variable whose distribution to visualize:",dfnames),
+                                    selectInput("quantvar_cat", "Select the *first categorical* variable to visualize across:",dfnames),
+                                    selectInput("quantvar_cat2", "Select the *second categorical* variable to visualize across:",dfnames)
+                                ),
+                "counts"   = selectInput("countvar", "Select the *categorical* variable to visualize its count:",dfnames),
+                "counts2"  = list(
+                                    selectInput("countvar", "Select the *independent* categorical variable:",dfnames),
+                                    selectInput("countvar2", "Selection the *dependent* categorical variable:",dfnames)
+                                 )                              
             )
     })
  
@@ -138,12 +151,22 @@ server <- function(input, output) {
         p    
     }
 
+
     plot_multbox <- function()
     {
         finaldata <- isolate_data()
         quantvar2 <-  as.symbol(isolate(input$quantvar))
         quantvar_cat2 <-  as.symbol(isolate(input$quantvar_cat))
-        p <- ggplot(finaldata, aes(x = !!quantvar_cat2, y = !!quantvar2, group = !!quantvar_cat2, fill = factor(!!quantvar_cat2))) + geom_boxplot() + scale_fill_hue(name = quantvar_cat2, l=45)
+        p <- ggplot(finaldata, aes(x = !!quantvar_cat2, y = !!quantvar2, fill = factor(!!quantvar_cat2))) + geom_boxplot() + scale_fill_hue(name = quantvar_cat2, l=45)
+        p
+    }
+    plot_multbox2 <- function()
+    {
+        finaldata <- isolate_data()
+        quantvar2 <-  as.symbol(isolate(input$quantvar))
+        quantvar_cat2 <-  as.symbol(isolate(input$quantvar_cat))
+        quantvar_cat22 <-  as.symbol(isolate(input$quantvar_cat2))
+        p <- ggplot(finaldata, aes(x = !!quantvar_cat2, y = !!quantvar2, fill = factor(!!quantvar_cat22))) + geom_boxplot() + scale_fill_hue(name = quantvar_cat22, l=45)
         p
     }
     plot_multdensity <- function()
@@ -159,7 +182,16 @@ server <- function(input, output) {
         finaldata <- isolate_data()
         quantvar2 <-  as.symbol(isolate(input$quantvar))
         quantvar_cat2 <-  as.symbol(isolate(input$quantvar_cat))
-        p <- ggplot(finaldata, aes(x = !!quantvar_cat2, y = !!quantvar2, group = !!quantvar_cat2, color = factor(!!quantvar_cat2))) + geom_jitter(width = 0.1) + scale_color_hue(name = quantvar_cat2, l=45)
+        p <- ggplot(finaldata, aes(x = !!quantvar_cat2, y = !!quantvar2, color = factor(!!quantvar_cat2))) + geom_jitter(width = 0.1) + scale_color_hue(name = quantvar_cat2, l=45)
+        p
+    }
+    plot_multjitter2 <- function()
+    {
+        finaldata <- isolate_data()
+        quantvar2 <-  as.symbol(isolate(input$quantvar))
+        quantvar_cat2 <-  as.symbol(isolate(input$quantvar_cat))
+        quantvar_cat22 <-  as.symbol(isolate(input$quantvar_cat2))
+        p <- ggplot(finaldata, aes(x = !!quantvar_cat2, y = !!quantvar2, color = factor(!!quantvar_cat22))) + geom_jitter(position = position_jitterdodge(jitter.width = 0.1, dodge.width = 0.8)) + scale_color_hue(name = quantvar_cat22, l=45)
         p
     }
     plot_multbarquant <- function()
@@ -167,7 +199,18 @@ server <- function(input, output) {
         finaldata <- isolate_data()
         quantvar2 <-  as.symbol(isolate(input$quantvar))
         quantvar_cat2 <-  as.symbol(isolate(input$quantvar_cat))
-        p <- ggplot(finaldata) + stat_summary_bin(aes(x = factor(!!quantvar_cat2), y = !!quantvar2, fill = factor(!!quantvar_cat2)), fun.y = "mean", geom = "bar") + stat_summary_bin(aes(factor(!!quantvar_cat2), y = !!quantvar2), fun.data = "mean_se", geom = "linerange", size=4) + xlab(quantvar_cat2) +  scale_fill_hue(name = quantvar_cat2, l=45)
+        p <- ggplot(finaldata) + stat_summary_bin(aes(x = factor(!!quantvar_cat2), y = !!quantvar2, fill = factor(!!quantvar_cat2)), fun.y = "mean", geom = "bar") + stat_summary_bin(aes(factor(!!quantvar_cat2), y = !!quantvar2), fun.data = "mean_se", geom = "linerange", size=3) + xlab(quantvar_cat2) +  scale_fill_hue(name = quantvar_cat2, l=45)
+        p
+    }
+    plot_multbarquant2 <- function()
+    {
+        finaldata <- isolate_data()
+        quantvar2 <-  as.symbol(isolate(input$quantvar))
+        quantvar_cat2 <-  as.symbol(isolate(input$quantvar_cat))
+        quantvar_cat22 <-  as.symbol(isolate(input$quantvar_cat2))
+        position_bar <- position_dodge(preserve = "total") ## will have a single category one fill up whole x
+        position_error <- position_dodge(0.9)
+        p <- ggplot(finaldata) + stat_summary_bin(aes(x = factor(!!quantvar_cat2), y = !!quantvar2, fill = factor(!!quantvar_cat22)), fun.y = "mean", geom = "bar", position = position_bar) + stat_summary_bin(aes(x = factor(!!quantvar_cat2), y = !!quantvar2, group = factor(!!quantvar_cat22)), fun.data = "mean_se", geom = "linerange", size=4, position = position_error) + xlab(quantvar_cat2) +  scale_fill_hue(name = quantvar_cat22, l=45)
         p
     }
     plot_line <- function()
@@ -190,18 +233,31 @@ server <- function(input, output) {
         p <- ggplot(finaldata, aes(x = factor(!!countvar))) + geom_bar(fill = thecolor) + xlab(countvar)
         p
     }
-    
-    plot_scatter <- function()
+    plot_barcount2 <- function()
     {
         finaldata <- isolate_data()
         thecolor  <- isolate_color()
-        x <-  as.symbol(isolate(input$xvar))
-        y <-  as.symbol(isolate(input$yvar))
+        countvar <-  as.symbol(isolate(input$countvar))
+        countvar2 <-  as.symbol(isolate(input$countvar2))
+        p <- ggplot(finaldata, aes(x = factor(!!countvar), fill = factor(!!countvar2))) + geom_bar(position = "dodge2") + xlab(countvar) + scale_fill_hue(name = countvar2, l=45) 
+        p
+    }    
+    
+    plot_scatter <- function() ## todo: add r value into plot
+    {
+        finaldata <- isolate_data()
+        thecolor  <- isolate_color()
+        x <- as.symbol(isolate(input$xvar))
+        y <- as.symbol(isolate(input$yvar))
         regression <- isolate(input$bestfit)
         p <- ggplot(finaldata, aes(x = !!x, y = !!y)) + geom_point()
         if (regression == TRUE) 
         {
-            p <- p + geom_smooth(color = thecolor, method = "lm")
+            f.str <- paste(x, "~", y)
+            fit <- lm(as.formula(f.str), data = finaldata)
+            r2 <- round( summary(fit)$r.squared, 2 )
+
+            p <- p + geom_smooth(color = thecolor, method = "lm") + ggtitle(paste0("R^2 = ", r2)) + theme(plot.title = element_text(face = "bold.italic", size=20, hjust =0.1))
         }
         p
     }
@@ -239,7 +295,7 @@ server <- function(input, output) {
         }
         ########################################################
 
-        ################ Multiple distributions ##################
+        ################ Multiple distributions with single cat ##################
         if (viz == "multquant" & geom_quant == "Boxplot") p <- plot_multbox()
 
         if (viz == "multquant" & geom_quant == "Density plot") p <- plot_multdensity()
@@ -262,9 +318,27 @@ server <- function(input, output) {
         }
         ########################################################
 
+        ################ Multiple distributions with two cat ##################
+        if (viz == "multquant2" & geom_quant == "Boxplot") p <- plot_multbox2()
+
+        if (viz == "multquant2" & geom_quant == "Jitter plot") p <- plot_multjitter2()
+
+        if (viz == "multquant2" & geom_quant == "Bar plot") p <- plot_multbarquant2()
+
+        if (viz == "multquant2" & geom_quant == "Make all")
+        {
+            p1 <- plot_multbox2() + theme(legend.position = "none")
+            p2 <- plot_multjitter2() + theme(legend.position = "bottom")
+            p3 <- plot_multbarquant2() + theme(legend.position = "none")
+           
+            p <- p1+p2+p3
+        }
+        ########################################################
+
 
         ################ Barplot for counts ####################
         if (viz == "counts") p <- plot_barcount()
+        if (viz == "counts2") p <- plot_barcount2()
         ########################################################
 
         ################ Scatterplot ###########################

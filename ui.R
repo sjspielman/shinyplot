@@ -35,8 +35,10 @@ ui <- fluidPage(
     conditionalPanel("output.userdata_exists",
     radioButtons("dataviz", "Type of data to visualization to create:",
                 choices=c("Distribution of a quantitative variable" = "quant",
-                          "Distribution of a quantitative variable, across categories of a categorical variable" = "multquant",
-                          "Barplot: Distribution of a categorical variable (i.e., counts)" = "counts",
+                          "Distribution of a quantitative variable, across categories of a *single* categorical variable" = "multquant",
+                          "Distribution of a quantitative variable, across categories of a *two* categorical variables" = "multquant2",
+                          "Barplot: Distribution of a single categorical variable (i.e., counts)" = "counts",
+                          "Barplot: Distribution of a single categorical variable, across categories of a second categorical variable" = "counts2",
                           "Scatterplot: Relationship between two quantitative variables" = "scatter"))  
     ),
     # Horizontal line

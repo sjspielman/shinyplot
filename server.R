@@ -253,9 +253,9 @@ server <- function(input, output) {
         p <- ggplot(finaldata, aes(x = !!x, y = !!y)) + geom_point()
         if (regression == TRUE) 
         {
-            f.str <- paste(x, "~", y)
+            f.str <- paste(y, "~", x)
             fit <- lm(as.formula(f.str), data = finaldata)
-            r2 <- round( summary(fit)$r.squared, 2 )
+            r2 <- round( summary(fit)$r.squared, 4 )
 
             p <- p + geom_smooth(color = thecolor, method = "lm") + ggtitle(paste0("R^2 = ", r2)) + theme(plot.title = element_text(face = "bold.italic", size=20, hjust =0.1))
         }

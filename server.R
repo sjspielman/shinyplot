@@ -68,6 +68,11 @@ server <- function(input, output) {
                                     value = TRUE,
                                     width = NULL
                                 )),         
+                 "scatter2" = list(
+                                selectInput("xvar", "Select the X-axis (aka independent/predictor) variable:",dfnames),
+                                selectInput("yvar", "Select the Y-axis (aka dependent/response) variable:",dfnames),
+                                selectInput("catvar", "Select the categorical variable to show in the scatterplot:",dfnames)                                
+                                ),         
                 "quant"   = selectInput("quantvar", "Select the quantitative variable to visualize:",dfnames),
                 "multquant" = list(
                                     selectInput("quantvar", "Select the quantitative variable to visualize:",dfnames),
@@ -139,7 +144,7 @@ server <- function(input, output) {
         finaldata <- isolate_data()
         thecolor  <- isolate_color()
         quantvar2 <- as.symbol( isolate(input$quantvar) )
-        p <- ggplot(finaldata, aes(y = !!quantvar2)) + geom_jitter(aes(x=""), color = thecolor, width=0.075) + xlab("")
+        p <- ggplot(finaldata, aes(y = !!quantvar2)) + geom_jitter(size=3, aes(x=""), color = thecolor, width=0.075) + xlab("")
         p    
     }
     plot_barquant <- function()
@@ -182,7 +187,7 @@ server <- function(input, output) {
         finaldata <- isolate_data()
         quantvar2 <-  as.symbol(isolate(input$quantvar))
         quantvar_cat2 <-  as.symbol(isolate(input$quantvar_cat))
-        p <- ggplot(finaldata, aes(x = !!quantvar_cat2, y = !!quantvar2, color = factor(!!quantvar_cat2))) + geom_jitter(width = 0.1) + scale_color_hue(name = quantvar_cat2, l=45)
+        p <- ggplot(finaldata, aes(x = !!quantvar_cat2, y = !!quantvar2, color = factor(!!quantvar_cat2))) + geom_jitter(size=3, width = 0.1) + scale_color_hue(name = quantvar_cat2, l=45)
         p
     }
     plot_multjitter2 <- function()
@@ -191,7 +196,7 @@ server <- function(input, output) {
         quantvar2 <-  as.symbol(isolate(input$quantvar))
         quantvar_cat2 <-  as.symbol(isolate(input$quantvar_cat))
         quantvar_cat22 <-  as.symbol(isolate(input$quantvar_cat2))
-        p <- ggplot(finaldata, aes(x = !!quantvar_cat2, y = !!quantvar2, color = factor(!!quantvar_cat22))) + geom_jitter(position = position_jitterdodge(jitter.width = 0.1, dodge.width = 0.8)) + scale_color_hue(name = quantvar_cat22, l=45)
+        p <- ggplot(finaldata, aes(x = !!quantvar_cat2, y = !!quantvar2, color = factor(!!quantvar_cat22))) + geom_jitter(size=3, position = position_jitterdodge(jitter.width = 0.1, dodge.width = 0.8)) + scale_color_hue(name = quantvar_cat22, l=45)
         p
     }
     plot_multbarquant <- function()
@@ -243,14 +248,14 @@ server <- function(input, output) {
         p
     }    
     
-    plot_scatter <- function() ## todo: add r value into plot
+    plot_scatter <- function()
     {
         finaldata <- isolate_data()
         thecolor  <- isolate_color()
         x <- as.symbol(isolate(input$xvar))
         y <- as.symbol(isolate(input$yvar))
         regression <- isolate(input$bestfit)
-        p <- ggplot(finaldata, aes(x = !!x, y = !!y)) + geom_point()
+        p <- ggplot(finaldata, aes(x = !!x, y = !!y)) + geom_point(size=2)
         if (regression == TRUE) 
         {
             f.str <- paste(y, "~", x)
@@ -261,6 +266,18 @@ server <- function(input, output) {
         }
         p
     }
+    plot_scatter2 <- function()
+    {
+        finaldata <- isolate_data()
+        thecolor  <- isolate_color()
+        x <- as.symbol(isolate(input$xvar))
+        y <- as.symbol(isolate(input$yvar))
+        catvar <- as.symbol(isolate(input$catvar))
+        p <- ggplot(finaldata, aes(x = !!x, y = !!y, color = factor(!!catvar))) + geom_point(size=3)
+		p
+    }
+
+
     ################################################################################################
     ################################################################################################
     
@@ -343,6 +360,7 @@ server <- function(input, output) {
 
         ################ Scatterplot ###########################
         if (viz == "scatter") p <- plot_scatter()
+        if (viz == "scatter2") p <- plot_scatter2()
         ########################################################
         
         print(p)

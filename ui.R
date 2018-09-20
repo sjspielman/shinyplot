@@ -39,7 +39,8 @@ ui <- fluidPage(
                           "Distribution of a quantitative variable, across TWO categorical variables" = "multquant2",
                           "Distribution of a categorical variable (barplot)" = "counts",
                           "Distribution of a categorical variable, across another categorical variable (barplot)" = "counts2",
-                          "Relationship between two quantitative variables (scatterplot)" = "scatter"))  
+                          "Relationship between two quantitative variables (scatterplot)" = "scatter",
+                          "Relationship between two quantitative variables (scatterplot), also showing ONE categorical variable" = "scatter2"))  
     ),
     # Horizontal line
     

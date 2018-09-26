@@ -261,8 +261,9 @@ server <- function(input, output) {
             f.str <- paste(y, "~", x)
             fit <- lm(as.formula(f.str), data = finaldata)
             r2 <- round( summary(fit)$r.squared, 4 )
+            slope <- round(fit$coefficients[2], 3)
 
-            p <- p + geom_smooth(color = thecolor, method = "lm") + ggtitle(paste0("R^2 = ", r2)) + theme(plot.title = element_text(face = "bold.italic", size=20, hjust =0.1))
+            p <- p + geom_smooth(color = thecolor, method = "lm") + ggtitle(paste0("R^2 = ", r2, ".   Slope = ", slope)) + theme(plot.title = element_text(face = "bold.italic", size=20, hjust =0.1))
         }
         p
     }
@@ -273,7 +274,7 @@ server <- function(input, output) {
         x <- as.symbol(isolate(input$xvar))
         y <- as.symbol(isolate(input$yvar))
         catvar <- as.symbol(isolate(input$catvar))
-        p <- ggplot(finaldata, aes(x = !!x, y = !!y, color = factor(!!catvar))) + geom_point(size=3)
+        p <- ggplot(finaldata, aes(x = !!x, y = !!y, color = factor(!!catvar))) + geom_point(size=3) + scale_color_hue(name = catvar, l=45) 
 		p
     }
 
